@@ -1,7 +1,11 @@
 package sample;
 
+import javafx.scene.image.Image;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -9,7 +13,14 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Bot extends TelegramLongPollingBot {
     //создаем две константы, присваиваем им значения токена и имя бота соответсвтенно
@@ -20,10 +31,12 @@ public class Bot extends TelegramLongPollingBot {
     private String shop = "all";
 
     Excel excel = new Excel();
+    Excel BARCODE = new Excel();
 
     Bot()
     {
         excel.createExcel("C:\\Users\\Admin\\Desktop\\Номенклатура_05.06.22.xlsx", 0);
+        BARCODE.createExcel("C:\\Users\\Admin\\Desktop\\BARCODE.xlsx", 0);
         initKeyboard();
     }
 
@@ -40,8 +53,39 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         try{
+
+            if(update.getMessage().hasPhoto()){
+
+                BarCodeRead barCodeRead = new BarCodeRead();
+                BufferedImage imgB = null;
+                //если не будет работать корректно(устанавливать соединение),
+                // значит нужно делать запрос с fileId(https://api.telegram.org/bot<token>/getfile?file_id={the file_id of the photo you want to download}),
+                // получать filepath, и уже его вставлять в форму https://api.telegram.org/file/bot<token>/<file_path> СДЕЛАНО!!!
+                imgB = ImageIO.read(downloadImg("https://api.telegram.org/file/bot"+getBotToken() + "/" + getFilePath(update.getMessage().getPhoto().get(3).getFileId())));
+                String barCodeStr = barCodeRead.getBarCode(imgB);
+
+                Message inMess = update.getMessage();
+                String chatId = inMess.getChatId().toString();
+                //ищем сначало продукт по штрих коду в одной базе, потом в другой ищем цену и артикул по названию
+                String response = findProduct(findProductFromBarCode(barCodeStr));
+
+                if(response.equals("Товар не найден.")){
+                    response = "Товар не найден или штрихкода нет в базе.";
+                }
+
+                SendMessage outMess = new SendMessage();
+
+                outMess.setChatId(chatId);
+                outMess.setText(response);
+                outMess.setReplyMarkup(replyKeyboardMarkup);
+
+                execute(outMess);
+
+            }
+
             if(update.hasMessage() && update.getMessage().hasText())
             {
+
                 //Извлекаем из объекта сообщение пользователя
                 Message inMess = update.getMessage();
                 //Достаем из inMess id чата пользователя
@@ -59,7 +103,7 @@ public class Bot extends TelegramLongPollingBot {
                 //Отправка в чат
                 execute(outMess);
             }
-        } catch (TelegramApiException e) {
+        } catch (TelegramApiException | IOException e) {
             //Обработка ошибки связанной с достижением лимита одного сообщения
             if(e.getLocalizedMessage().equals("Error sending message: [400] Bad Request: message is too long")){
 
@@ -168,12 +212,51 @@ public class Bot extends TelegramLongPollingBot {
             i++;
         }
         if(result.equals("")){
-            return "Товар не найден";
+            return "Товар не найден.";
         }else{
             System.out.println(result);
             return result;
         }
 
+    }
+
+    public String findProductFromBarCode(String BarCode){
+
+        int i = 7;  //начало номенклатуры
+        String result = "";
+        while(!BARCODE.getCell(i, 0).toString().equals("")){
+
+            if(BARCODE.getCell(i, 0).toString().equals(BarCode)){
+                return BARCODE.getCell(i, 3).toString();
+            }
+
+            i++;
+
+        }
+
+        return "Штрихкод не найден!";
+    }
+
+    public InputStream downloadImg(String name) throws IOException {
+
+        URL url = new URL(name);
+        URLConnection c = url.openConnection();
+        return (c.getInputStream());
+
+    }
+
+    public String getFilePath(String FileID){
+
+        String text = null;
+        try (Scanner scanner = new Scanner(downloadImg("https://api.telegram.org/bot" + getBotToken() + "/getfile?file_id=" + FileID), StandardCharsets.UTF_8.name())) {
+            text = scanner.useDelimiter("\\A").next();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //System.out.println(text);
+        //System.out.println(text.substring(text.indexOf("file_path") + "file_path".length() + 2).replaceAll("}", "").replaceAll("\"", ""));
+
+        return text.substring(text.indexOf("file_path") + "file_path".length() + 2).replaceAll("}", "").replaceAll("\"", "");
     }
 
 }
