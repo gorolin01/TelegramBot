@@ -35,8 +35,8 @@ public class Bot extends TelegramLongPollingBot {
 
     Bot()
     {
-        excel.createExcel("C:\\Users\\Admin\\Desktop\\Номенклатура_05.06.22.xlsx", 0);
-        BARCODE.createExcel("C:\\Users\\Admin\\Desktop\\BARCODE.xlsx", 0);
+        excel.createExcel("C:\\Users\\Server\\Desktop\\Номенклатура_24.01.23.xlsx", 0);
+        BARCODE.createExcel("C:\\Users\\Server\\Desktop\\BARCODE.xlsx", 0);
         initKeyboard();
     }
 
@@ -184,7 +184,7 @@ public class Bot extends TelegramLongPollingBot {
 
     String findProduct(String search_string){
 
-        int i = 9;  //начало номенклатуры
+        int i = 6;  //начало номенклатуры
         String result = "";
         while(!excel.getCell(i, 1).toString().equals("")){
 
@@ -201,12 +201,12 @@ public class Bot extends TelegramLongPollingBot {
 
             //проверяем каждое слово из искомого выражения. В искомом тексте должны быть эти слова в любом порядке
             for(int j = 0; j < search_expression.length; j++){
-                if(excel.getCell(i, 1).toString().toLowerCase().contains(search_expression[j].toLowerCase())){
+                if(excel.getCell(i, 0).toString().toLowerCase().contains(search_expression[j].toLowerCase())){
                     counter++;
                 }
             }
             if(counter == search_expression.length){    //проверка, все ли слова есть в искомом выражении
-                result += "\uD83C\uDF0D" + excel.getCell(i, 1).toString() + "\n" + " Цена: " + excel.getCell(i, 5).toString() + " Руб." + "\n\n";    //возврат наименование + цена
+                result += "\uD83C\uDF0D" + excel.getCell(i, 0).toString() + "\n" + " Цена: " + excel.getCell(i, 4).toString() + " Руб." + "\n\n";    //возврат наименование + цена
             }
 
             i++;
