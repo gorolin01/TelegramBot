@@ -14,7 +14,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../lib_IDE/poi-5.0.0/poi-5.0.0.jar!/" />
+          <root url="jar://$USER_HOME$/lib_IDE/poi-5.0.0/poi-5.0.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -23,19 +23,19 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="file://$MODULE_DIR$/../../lib_IDE/poi-5.0.0" />
+          <root url="file://$USER_HOME$/lib_IDE/poi-5.0.0" />
         </CLASSES>
         <JAVADOC>
-          <root url="file://$MODULE_DIR$/../../lib_IDE/poi-5.0.0/docs/apidocs/dev" />
+          <root url="file://$USER_HOME$/lib_IDE/poi-5.0.0/docs/apidocs/dev" />
         </JAVADOC>
         <SOURCES />
-        <jarDirectory url="file://$MODULE_DIR$/../../lib_IDE/poi-5.0.0" recursive="false" />
+        <jarDirectory url="file://$USER_HOME$/lib_IDE/poi-5.0.0" recursive="false" />
       </library>
     </orderEntry>
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../lib_IDE/poi-5.0.0/ooxml-lib/commons-compress-1.20.jar!/" />
+          <root url="jar://$USER_HOME$/lib_IDE/poi-5.0.0/ooxml-lib/commons-compress-1.20.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -44,7 +44,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../lib_IDE/poi-5.0.0/ooxml-lib/curvesapi-1.06.jar!/" />
+          <root url="jar://$USER_HOME$/lib_IDE/poi-5.0.0/ooxml-lib/curvesapi-1.06.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -53,7 +53,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../lib_IDE/poi-5.0.0/ooxml-lib/xmlbeans-4.0.0.jar!/" />
+          <root url="jar://$USER_HOME$/lib_IDE/poi-5.0.0/ooxml-lib/xmlbeans-4.0.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -62,7 +62,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../lib_IDE/poi-5.0.0/lib/commons-codec-1.15.jar!/" />
+          <root url="jar://$USER_HOME$/lib_IDE/poi-5.0.0/lib/commons-codec-1.15.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -71,7 +71,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../lib_IDE/poi-5.0.0/lib/commons-collections4-4.4.jar!/" />
+          <root url="jar://$USER_HOME$/lib_IDE/poi-5.0.0/lib/commons-collections4-4.4.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -80,7 +80,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../lib_IDE/poi-5.0.0/lib/commons-math3-3.6.1.jar!/" />
+          <root url="jar://$USER_HOME$/lib_IDE/poi-5.0.0/lib/commons-math3-3.6.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -89,7 +89,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../lib_IDE/poi-5.0.0/lib/SparseBitSet-1.2.jar!/" />
+          <root url="jar://$USER_HOME$/lib_IDE/poi-5.0.0/lib/SparseBitSet-1.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -98,7 +98,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../lib_IDE/BarCodeReader/2/core-3.5.0.jar!/" />
+          <root url="jar://$USER_HOME$/lib_IDE/BarCodeReader/2/core-3.5.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -107,12 +107,13 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../lib_IDE/BarCodeReader/2/javase-3.5.0.jar!/" />
+          <root url="jar://$USER_HOME$/lib_IDE/BarCodeReader/2/javase-3.5.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="commons-codec-1.15" level="project" />
     <orderEntry type="library" name="Maven: org.telegram:telegrambots:5.3.0" level="project" />
     <orderEntry type="library" name="Maven: org.telegram:telegrambots-meta:5.3.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:30.0-jre" level="project" />
@@ -133,7 +134,6 @@
     <orderEntry type="library" name="Maven: org.glassfish.jersey.inject:jersey-hk2:2.32" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.jersey.core:jersey-common:2.32" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.hk2:osgi-resource-locator:1.0.3" level="project" />
-    <orderEntry type="library" name="Maven: com.sun.activation:jakarta.activation:1.2.2" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.hk2:hk2-locator:2.6.1" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.hk2.external:aopalliance-repackaged:2.6.1" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.hk2:hk2-api:2.6.1" level="project" />
@@ -165,5 +165,8 @@
     <orderEntry type="library" name="Maven: com.google.zxing:javase:3.5.1" level="project" />
     <orderEntry type="library" name="Maven: com.beust:jcommander:1.82" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.jai-imageio:jai-imageio-core:1.4.0" level="project" />
+    <orderEntry type="library" name="Maven: edu.cmu.sphinx:sphinx4-core:5prealpha-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.commons:commons-math3:3.2" level="project" />
+    <orderEntry type="library" name="Maven: edu.cmu.sphinx:sphinx4-data:5prealpha-SNAPSHOT" level="project" />
   </component>
 </module>

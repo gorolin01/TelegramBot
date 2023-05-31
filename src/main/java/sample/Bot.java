@@ -1,5 +1,6 @@
 package sample;
 
+import edu.cmu.sphinx.api.StreamSpeechRecognizer;
 import javafx.scene.image.Image;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -8,10 +9,12 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.Voice;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.api.objects.Audio;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -19,14 +22,29 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Scanner;
+
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+//import org.telegram.telegrambots.meta.api.objects.File;
+import java.io.File;
+
+import edu.cmu.sphinx.api.Configuration;
+import edu.cmu.sphinx.api.LiveSpeechRecognizer;
+
+import java.io.FileInputStream;
+import java.io.IOException;
 
 public class Bot extends TelegramLongPollingBot {
     //создаем две константы, присваиваем им значения токена и имя бота соответсвтенно
     //вместо звездочек подставляйте свои данные
     final private String BOT_TOKEN = "5401035487:AAEQlxp44vLeiMu9lHUI6dDw51xqBg8u9gE";
     final private String BOT_NAME = "TestIDEytevv_bot";
+    private static final String GOOGLE_APPLICATION_CREDENTIALS = "credentials.json";
     ReplyKeyboardMarkup replyKeyboardMarkup;
     private String shop = "all";
 
@@ -35,8 +53,8 @@ public class Bot extends TelegramLongPollingBot {
 
     Bot()
     {
-        excel.createExcel("C:\\Users\\Server\\Desktop\\Номенклатура_24.01.23.xlsx", 0);
-        BARCODE.createExcel("C:\\Users\\Server\\Desktop\\BARCODE.xlsx", 0);
+        excel.createExcel("C:\\Users\\Cashless\\Desktop\\DataForTelegramBot\\Номенклатура_30.05.23.xlsx", 0);
+        BARCODE.createExcel("C:\\Users\\Cashless\\Desktop\\DataForTelegramBot\\BARCODE.xlsx", 0);
         initKeyboard();
     }
 
@@ -103,6 +121,28 @@ public class Bot extends TelegramLongPollingBot {
                 //Отправка в чат
                 execute(outMess);
             }
+
+            if (update.getMessage().hasVoice()) {
+                Message inMess = update.getMessage();
+                Voice audio = inMess.getVoice();
+                String fileId = audio.getFileId();
+                String filePath = downloadVoiceFile(fileId);
+                String text = convertVoiceToText(filePath);
+
+                String chatId = inMess.getChatId().toString();
+                SendMessage outMess = new SendMessage();
+
+                if (text.equals("")) text = "Речь не распознана.";
+
+
+                //Добавляем в наше сообщение id чата а также наш ответ
+                outMess.setChatId(chatId);
+                outMess.setText(text);
+                outMess.setReplyMarkup(replyKeyboardMarkup);
+
+                //Отправка в чат
+                execute(outMess);
+            }
         } catch (TelegramApiException | IOException e) {
             //Обработка ошибки связанной с достижением лимита одного сообщения
             if(e.getLocalizedMessage().equals("Error sending message: [400] Bad Request: message is too long")){
@@ -127,6 +167,8 @@ public class Bot extends TelegramLongPollingBot {
             }
             System.out.println(e.getLocalizedMessage());
             e.printStackTrace();
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
         }
     }
     public String parseMessage(String textMsg) {
@@ -258,5 +300,50 @@ public class Bot extends TelegramLongPollingBot {
 
         return text.substring(text.indexOf("file_path") + "file_path".length() + 2).replaceAll("}", "").replaceAll("\"", "");
     }
+
+    private String downloadVoiceFile(String fileId) {
+        GetFile getFileMethod = new GetFile();
+        getFileMethod.setFileId(fileId);
+        try {
+            org.telegram.telegrambots.meta.api.objects.File telegramFile = execute(getFileMethod);
+            String fileUrl = getFileUrl(telegramFile);
+            try (InputStream in = new URL(fileUrl).openStream()) {
+                Path filePath = Files.createTempFile("voice_", ".oga");
+                Files.copy(in, filePath, StandardCopyOption.REPLACE_EXISTING);
+                return filePath.toString();
+            }
+        } catch (TelegramApiException | IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private String getFileUrl(org.telegram.telegrambots.meta.api.objects.File file) {
+        return String.format("https://api.telegram.org/file/bot%s/%s", getBotToken(), file.getFilePath());
+    }
+
+    private String convertVoiceToText(String filePath) throws IOException, InstantiationException {
+        Configuration configuration = new Configuration();
+
+        // Установка пути к модели распознавания речи
+        configuration.setAcousticModelPath("file:cmusphinx-ru-5.2");
+        configuration.setDictionaryPath("file:cmusphinx-ru-5.2\\ru.dic");
+        configuration.setLanguageModelPath("file:cmusphinx-ru-5.2\\ru.lm");
+
+        InputStream audioStream = null;
+
+        audioStream = new FileInputStream(filePath);
+        StreamSpeechRecognizer recognizer = new StreamSpeechRecognizer(configuration);
+        System.out.println("Метка ошибки");
+
+        recognizer.startRecognition(audioStream);
+        String result = recognizer.getResult().getHypothesis();
+
+        recognizer.stopRecognition();
+        audioStream.close();
+
+        return result;
+    }
+
 
 }
