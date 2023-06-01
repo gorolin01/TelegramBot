@@ -17,11 +17,13 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.api.objects.Audio;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -33,11 +35,31 @@ import java.nio.file.Path;
 //import org.telegram.telegrambots.meta.api.objects.File;
 import java.io.File;
 
-import edu.cmu.sphinx.api.Configuration;
-import edu.cmu.sphinx.api.LiveSpeechRecognizer;
-
 import java.io.FileInputStream;
 import java.io.IOException;
+
+import org.vosk.LogLevel;
+import org.vosk.Recognizer;
+import org.vosk.LibVosk;
+import org.vosk.Model;
+
+import javax.sound.sampled.AudioSystem;
+import be.tarsos.dsp.io.TarsosDSPAudioInputStream;
+import be.tarsos.dsp.io.TarsosDSPAudioFormat;
+import be.tarsos.dsp.io.jvm.AudioDispatcherFactory;
+
+import javax.sound.sampled.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import org.bytedeco.ffmpeg.global.avcodec;
+import org.bytedeco.ffmpeg.global.avformat;
+import org.bytedeco.ffmpeg.global.avutil;
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.IntPointer;
+import org.bytedeco.javacpp.PointerPointer;
+
 
 public class Bot extends TelegramLongPollingBot {
     //создаем две константы, присваиваем им значения токена и имя бота соответсвтенно
@@ -127,9 +149,12 @@ public class Bot extends TelegramLongPollingBot {
                 Voice audio = inMess.getVoice();
                 String fileId = audio.getFileId();
                 String filePath = downloadVoiceFile(fileId);
-                String text = convertVoiceToText(filePath);
-                /*String text = convertVoiceToText("C:\\Users\\Cashless\\IdeaProjects\\TelegramBot\\TestVoice.mp3");
-                System.out.println("Распознанный текст: " + text);*/
+
+                //String text = VOSK(filePath);
+                String text = VOSK("C:\\Users\\Cashless\\IdeaProjects\\TelegramBot\\TestVoice.wav");
+                System.out.println("Распознанный текст: " + text);
+                //convertOgaToWav(filePath);
+                convertOgaToWav("TestVoice.oga");
 
                 String chatId = inMess.getChatId().toString();
                 SendMessage outMess = new SendMessage();
@@ -169,7 +194,7 @@ public class Bot extends TelegramLongPollingBot {
             }
             System.out.println(e.getLocalizedMessage());
             e.printStackTrace();
-        } catch (InstantiationException e) {
+        } catch (UnsupportedAudioFileException e) {
             throw new RuntimeException(e);
         }
     }
@@ -324,29 +349,74 @@ public class Bot extends TelegramLongPollingBot {
         return String.format("https://api.telegram.org/file/bot%s/%s", getBotToken(), file.getFilePath());
     }
 
-    private String convertVoiceToText(String filePath) throws IOException, InstantiationException {
-        Configuration configuration = new Configuration();
+    //распознование речи с помощью VOSK
+    private String VOSK(String filePath) throws IOException, UnsupportedAudioFileException {
 
-        // Установка пути к модели распознавания речи
-        configuration.setAcousticModelPath("file:cmusphinx-ru-5.2");
-        configuration.setDictionaryPath("file:cmusphinx-ru-5.2\\ru.dic");
-        configuration.setLanguageModelPath("file:cmusphinx-ru-5.2\\ru.lm");
-        System.out.println("Путь воина: " + filePath);
+        LibVosk.setLogLevel(LogLevel.DEBUG);
+        String result = "";
 
-        InputStream audioStream = null;
+        try (Model model = new Model("vosk-model-small-ru-0.22");
+             InputStream ais = AudioSystem.getAudioInputStream(new BufferedInputStream(new FileInputStream(filePath)));
+             //Для корректной работы нужно подбирать sampleRate
+             Recognizer recognizer = new Recognizer(model, 40000)) {
 
-        audioStream = new FileInputStream(filePath);
-        StreamSpeechRecognizer recognizer = new StreamSpeechRecognizer(configuration);
-        //System.out.println("Метка ошибки");
+            int nbytes;
+            byte[] b = new byte[4096];
+            while ((nbytes = ais.read(b)) >= 0) {
+                if (recognizer.acceptWaveForm(b, nbytes)) {
+                    result = result + CR(recognizer.getResult()) + " ";
+                    System.out.println(result);
+                } else {
+                    System.out.println(recognizer.getPartialResult());
+                }
+            }
+            result = result.substring(0, result.length() - 1);
 
-        recognizer.startRecognition(audioStream);
-        String result = recognizer.getResult().getHypothesis();
-
-        recognizer.stopRecognition();
-        audioStream.close();
+            System.out.println("FinalResult: " + recognizer.getFinalResult());
+            System.out.println("----->>>" + result);
+        }
 
         return result;
     }
 
+    //обрезает лишнее в итоговой строке после работы VOSK
+    private String CR(String str) {
+
+        String start  = "\"text\" : \"";
+        String finish = "\"\n}";
+        return str.substring(str.indexOf(start) + start.length(), str.indexOf(finish));
+
+    }
+
+    //принимает файл формата oga и конвертирует его в wav
+    private String convertOgaToWav(String ogaFilePath) {
+
+        try {
+            // Создаем временной WAV файл
+            File tempWavFile = File.createTempFile("output", ".wav");
+
+            // Команда FFmpeg для конвертации OGA в WAV
+            String ffmpegPath = "C:\\Users\\Cashless\\IdeaProjects\\TelegramBot\\ffmpeg-2023-05-31-git-baa9fccf8d-full_build";
+            String[] ffmpegCommand = {
+                    ffmpegPath,
+                    "-i",
+                    ogaFilePath,
+                    tempWavFile.getAbsolutePath()
+            };
+
+            // Выполняем команду FFmpeg
+            Process ffmpegProcess = Runtime.getRuntime().exec(ffmpegCommand);
+            int exitCode = ffmpegProcess.waitFor();
+
+            if (exitCode == 0) {
+                // Конвертация прошла успешно
+                return tempWavFile.getAbsolutePath();
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 
 }
