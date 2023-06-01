@@ -75,8 +75,8 @@ public class Bot extends TelegramLongPollingBot {
 
     Bot()
     {
-        excel.createExcel("C:\\Users\\Cashless\\Desktop\\DataForTelegramBot\\Номенклатура_30.05.23.xlsx", 0);
-        BARCODE.createExcel("C:\\Users\\Cashless\\Desktop\\DataForTelegramBot\\BARCODE.xlsx", 0);
+        excel.createExcel("I:\\WorkSpace\\DataForTelegramBot\\Номенклатура_05.06.22.xlsx", 0);
+        BARCODE.createExcel("I:\\WorkSpace\\DataForTelegramBot\\BARCODE.xlsx", 0);
         initKeyboard();
     }
 
@@ -151,10 +151,10 @@ public class Bot extends TelegramLongPollingBot {
                 String filePath = downloadVoiceFile(fileId);
 
                 //String text = VOSK(filePath);
-                String text = VOSK("C:\\Users\\Cashless\\IdeaProjects\\TelegramBot\\TestVoice.wav");
+                String text = VOSK("I:\\WorkSpace\\TelegramBot\\TestVoice.wav");
                 System.out.println("Распознанный текст: " + text);
                 //convertOgaToWav(filePath);
-                convertOgaToWav("TestVoice.oga");
+                convertOgaToWav("I:\\WorkSpace\\TelegramBot\\TestVoice.oga");
 
                 String chatId = inMess.getChatId().toString();
                 SendMessage outMess = new SendMessage();
@@ -335,7 +335,8 @@ public class Bot extends TelegramLongPollingBot {
             org.telegram.telegrambots.meta.api.objects.File telegramFile = execute(getFileMethod);
             String fileUrl = getFileUrl(telegramFile);
             try (InputStream in = new URL(fileUrl).openStream()) {
-                Path filePath = Files.createTempFile("voice_", ".oga");
+                //Path filePath = Files.createTempFile("voice_", ".oga");
+                Path filePath = Files.createTempFile("voice_", ".wav");
                 Files.copy(in, filePath, StandardCopyOption.REPLACE_EXISTING);
                 return filePath.toString();
             }
@@ -355,7 +356,7 @@ public class Bot extends TelegramLongPollingBot {
         LibVosk.setLogLevel(LogLevel.DEBUG);
         String result = "";
 
-        try (Model model = new Model("vosk-model-small-ru-0.22");
+        try (Model model = new Model("I:\\WorkSpace\\TelegramBot\\vosk-model-small-ru-0.22");
              InputStream ais = AudioSystem.getAudioInputStream(new BufferedInputStream(new FileInputStream(filePath)));
              //Для корректной работы нужно подбирать sampleRate
              Recognizer recognizer = new Recognizer(model, 40000)) {
@@ -396,7 +397,7 @@ public class Bot extends TelegramLongPollingBot {
             File tempWavFile = File.createTempFile("output", ".wav");
 
             // Команда FFmpeg для конвертации OGA в WAV
-            String ffmpegPath = "C:\\Users\\Cashless\\IdeaProjects\\TelegramBot\\ffmpeg-2023-05-31-git-baa9fccf8d-full_build";
+            String ffmpegPath = "I:\\WorkSpace\\TelegramBot\\ffmpeg-2023-05-31-git-baa9fccf8d-full_build\\bin\\ffmpeg.exe";
             String[] ffmpegCommand = {
                     ffmpegPath,
                     "-i",
@@ -406,6 +407,9 @@ public class Bot extends TelegramLongPollingBot {
 
             // Выполняем команду FFmpeg
             Process ffmpegProcess = Runtime.getRuntime().exec(ffmpegCommand);
+
+            System.out.println("PATH: " + tempWavFile.getAbsolutePath());
+            System.out.println("ffmpegCommand: " + ffmpegCommand[0] + " " +  ffmpegCommand[1] + " " +  ffmpegCommand[2] + " " +  ffmpegCommand[3]);
             int exitCode = ffmpegProcess.waitFor();
 
             if (exitCode == 0) {
