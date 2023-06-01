@@ -128,6 +128,8 @@ public class Bot extends TelegramLongPollingBot {
                 String fileId = audio.getFileId();
                 String filePath = downloadVoiceFile(fileId);
                 String text = convertVoiceToText(filePath);
+                /*String text = convertVoiceToText("C:\\Users\\Cashless\\IdeaProjects\\TelegramBot\\TestVoice.mp3");
+                System.out.println("Распознанный текст: " + text);*/
 
                 String chatId = inMess.getChatId().toString();
                 SendMessage outMess = new SendMessage();
@@ -329,12 +331,13 @@ public class Bot extends TelegramLongPollingBot {
         configuration.setAcousticModelPath("file:cmusphinx-ru-5.2");
         configuration.setDictionaryPath("file:cmusphinx-ru-5.2\\ru.dic");
         configuration.setLanguageModelPath("file:cmusphinx-ru-5.2\\ru.lm");
+        System.out.println("Путь воина: " + filePath);
 
         InputStream audioStream = null;
 
         audioStream = new FileInputStream(filePath);
         StreamSpeechRecognizer recognizer = new StreamSpeechRecognizer(configuration);
-        System.out.println("Метка ошибки");
+        //System.out.println("Метка ошибки");
 
         recognizer.startRecognition(audioStream);
         String result = recognizer.getResult().getHypothesis();
