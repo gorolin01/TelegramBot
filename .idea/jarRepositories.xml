@@ -22,14 +22,14 @@
       <option name="url" value="https://repo.maven.apache.org/maven2" />
     </remote-repository>
     <remote-repository>
-      <option name="id" value="google-cloud-speech" />
-      <option name="name" value="google-cloud-speech" />
-      <option name="url" value="https://maven-central.storage.googleapis.com" />
-    </remote-repository>
-    <remote-repository>
       <option name="id" value="snapshots-repo" />
       <option name="name" value="snapshots-repo" />
       <option name="url" value="https://oss.sonatype.org/content/repositories/snapshots" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="google-cloud-speech" />
+      <option name="name" value="google-cloud-speech" />
+      <option name="url" value="https://maven-central.storage.googleapis.com" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="central" />

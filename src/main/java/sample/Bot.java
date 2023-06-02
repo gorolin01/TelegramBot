@@ -66,7 +66,6 @@ public class Bot extends TelegramLongPollingBot {
     //вместо звездочек подставляйте свои данные
     final private String BOT_TOKEN = "5401035487:AAEQlxp44vLeiMu9lHUI6dDw51xqBg8u9gE";
     final private String BOT_NAME = "TestIDEytevv_bot";
-    private static final String GOOGLE_APPLICATION_CREDENTIALS = "credentials.json";
     ReplyKeyboardMarkup replyKeyboardMarkup;
     private String shop = "all";
 
@@ -75,8 +74,8 @@ public class Bot extends TelegramLongPollingBot {
 
     Bot()
     {
-        excel.createExcel("I:\\WorkSpace\\DataForTelegramBot\\Номенклатура_05.06.22.xlsx", 0);
-        BARCODE.createExcel("I:\\WorkSpace\\DataForTelegramBot\\BARCODE.xlsx", 0);
+        excel.createExcel("C:\\Users\\Cashless\\Desktop\\DataForTelegramBot\\Номенклатура_30.05.23.xlsx", 0);
+        BARCODE.createExcel("C:\\Users\\Cashless\\Desktop\\DataForTelegramBot\\BARCODE.xlsx", 0);
         initKeyboard();
     }
 
@@ -149,22 +148,25 @@ public class Bot extends TelegramLongPollingBot {
                 Voice audio = inMess.getVoice();
                 String fileId = audio.getFileId();
                 String filePath = downloadVoiceFile(fileId);
+                String response = "";
 
-                //String text = VOSK(filePath);
-                String text = VOSK("I:\\WorkSpace\\TelegramBot\\TestVoice.wav");
-                System.out.println("Распознанный текст: " + text);
-                //convertOgaToWav(filePath);
-                convertOgaToWav("I:\\WorkSpace\\TelegramBot\\TestVoice.oga");
+
+                response = VOSK(convertOgaToWav(filePath));
+                System.out.println("Распознанный текст: " + response);
 
                 String chatId = inMess.getChatId().toString();
                 SendMessage outMess = new SendMessage();
 
-                if (text.equals("")) text = "Речь не распознана.";
+                if (response.equals(" ")) {
+                    response = "Речь не распознана.";
+                } else {
+                    response = findProduct(response);
+                }
 
 
                 //Добавляем в наше сообщение id чата а также наш ответ
                 outMess.setChatId(chatId);
-                outMess.setText(text);
+                outMess.setText(response);
                 outMess.setReplyMarkup(replyKeyboardMarkup);
 
                 //Отправка в чат
@@ -336,7 +338,7 @@ public class Bot extends TelegramLongPollingBot {
             String fileUrl = getFileUrl(telegramFile);
             try (InputStream in = new URL(fileUrl).openStream()) {
                 //Path filePath = Files.createTempFile("voice_", ".oga");
-                Path filePath = Files.createTempFile("voice_", ".wav");
+                Path filePath = Files.createTempFile("voice_", ".ogg");
                 Files.copy(in, filePath, StandardCopyOption.REPLACE_EXISTING);
                 return filePath.toString();
             }
@@ -356,13 +358,13 @@ public class Bot extends TelegramLongPollingBot {
         LibVosk.setLogLevel(LogLevel.DEBUG);
         String result = "";
 
-        try (Model model = new Model("I:\\WorkSpace\\TelegramBot\\vosk-model-small-ru-0.22");
+        try (Model model = new Model("vosk-model-small-ru-0.22");
              InputStream ais = AudioSystem.getAudioInputStream(new BufferedInputStream(new FileInputStream(filePath)));
              //Для корректной работы нужно подбирать sampleRate
              Recognizer recognizer = new Recognizer(model, 40000)) {
 
             int nbytes;
-            byte[] b = new byte[4096];
+            byte[] b = new byte[16384]; //увеличивая размер буфера можно увеличить скорость
             while ((nbytes = ais.read(b)) >= 0) {
                 if (recognizer.acceptWaveForm(b, nbytes)) {
                     result = result + CR(recognizer.getResult()) + " ";
@@ -395,32 +397,72 @@ public class Bot extends TelegramLongPollingBot {
         try {
             // Создаем временной WAV файл
             File tempWavFile = File.createTempFile("output", ".wav");
+            String tempWavName = tempWavFile.getAbsolutePath();
+            tempWavFile.delete();
 
             // Команда FFmpeg для конвертации OGA в WAV
-            String ffmpegPath = "I:\\WorkSpace\\TelegramBot\\ffmpeg-2023-05-31-git-baa9fccf8d-full_build\\bin\\ffmpeg.exe";
+            String ffmpegPath = "C:\\Users\\Cashless\\IdeaProjects\\TelegramBot\\ffmpeg-2023-05-31-git-baa9fccf8d-full_build\\bin\\ffmpeg.exe";
             String[] ffmpegCommand = {
                     ffmpegPath,
                     "-i",
                     ogaFilePath,
-                    tempWavFile.getAbsolutePath()
+                    "-af",
+                    "\"apad=whole_dur=10\"",    //добавляем 10 секунд иначе vosk виснет
+                    tempWavName
             };
 
             // Выполняем команду FFmpeg
-            Process ffmpegProcess = Runtime.getRuntime().exec(ffmpegCommand);
+            //Process ffmpegProcess = Runtime.getRuntime().exec(ffmpegCommand);
 
-            System.out.println("PATH: " + tempWavFile.getAbsolutePath());
+            // Создаем процесс FFmpeg
+            ProcessBuilder processBuilder = new ProcessBuilder(ffmpegCommand);
+            Process ffmpegProcess = processBuilder.start();
+
+            // Читаем вывод процесса в отдельном потоке
+            StreamGobbler outputGobbler = new StreamGobbler(ffmpegProcess.getInputStream());
+            outputGobbler.start();
+
+            // Читаем ошибки процесса в отдельном потоке
+            StreamGobbler errorGobbler = new StreamGobbler(ffmpegProcess.getErrorStream());
+            errorGobbler.start();
+
+            System.out.println("PATH: " + tempWavName);
             System.out.println("ffmpegCommand: " + ffmpegCommand[0] + " " +  ffmpegCommand[1] + " " +  ffmpegCommand[2] + " " +  ffmpegCommand[3]);
             int exitCode = ffmpegProcess.waitFor();
 
             if (exitCode == 0) {
                 // Конвертация прошла успешно
-                return tempWavFile.getAbsolutePath();
+                return tempWavName;
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
         return null;
     }
 
+}
+
+// Вспомогательный класс для чтения вывода и ошибок процесса в отдельных потоках
+class StreamGobbler extends Thread {
+    private final InputStream inputStream;
+
+    public StreamGobbler(InputStream inputStream) {
+        this.inputStream = inputStream;
+    }
+
+    @Override
+    public void run() {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Читаем и обрабатываем вывод или ошибку процесса
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
