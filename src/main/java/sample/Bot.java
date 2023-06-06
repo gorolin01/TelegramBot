@@ -74,8 +74,8 @@ public class Bot extends TelegramLongPollingBot {
 
     Bot()
     {
-        excel.createExcel("C:\\Users\\Cashless\\Desktop\\DataForTelegramBot\\Номенклатура_30.05.23.xlsx", 0);
-        BARCODE.createExcel("C:\\Users\\Cashless\\Desktop\\DataForTelegramBot\\BARCODE.xlsx", 0);
+        excel.createExcel("C:\\Users\\Server\\Desktop\\DataTelegramBot\\Номенклатура_30.05.23.xlsx", 0);
+        BARCODE.createExcel("C:\\Users\\Server\\Desktop\\DataTelegramBot\\BARCODE.xlsx", 0);
         initKeyboard();
     }
 
@@ -401,7 +401,7 @@ public class Bot extends TelegramLongPollingBot {
             tempWavFile.delete();
 
             // Команда FFmpeg для конвертации OGA в WAV
-            String ffmpegPath = "C:\\Users\\Cashless\\IdeaProjects\\TelegramBot\\ffmpeg-2023-05-31-git-baa9fccf8d-full_build\\bin\\ffmpeg.exe";
+            String ffmpegPath = "ffmpeg-6.0-full_build\\bin\\ffmpeg.exe";
             String[] ffmpegCommand = {
                     ffmpegPath,
                     "-i",
