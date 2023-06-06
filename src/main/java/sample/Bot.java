@@ -66,6 +66,8 @@ public class Bot extends TelegramLongPollingBot {
     //вместо звездочек подставляйте свои данные
     final private String BOT_TOKEN = "5401035487:AAEQlxp44vLeiMu9lHUI6dDw51xqBg8u9gE";
     final private String BOT_NAME = "TestIDEytevv_bot";
+    final private String PathVoskModel = "C:\\Users\\Cashless\\IdeaProjects\\TelegramBot\\vosk-model-small-ru-0.22";
+    final private String PathFfmpeg = "C:\\Users\\Cashless\\IdeaProjects\\TelegramBot\\ffmpeg-5.1.2-full_build\\bin\\ffmpeg.exe";
     ReplyKeyboardMarkup replyKeyboardMarkup;
     private String shop = "all";
 
@@ -74,8 +76,8 @@ public class Bot extends TelegramLongPollingBot {
 
     Bot()
     {
-        excel.createExcel("C:\\Users\\Server\\Desktop\\DataTelegramBot\\Номенклатура_30.05.23.xlsx", 0);
-        BARCODE.createExcel("C:\\Users\\Server\\Desktop\\DataTelegramBot\\BARCODE.xlsx", 0);
+        excel.createExcel("C:\\Users\\Cashless\\Desktop\\DataForTelegramBot\\Номенклатура_30.05.23.xlsx", 0);
+        BARCODE.createExcel("C:\\Users\\Cashless\\Desktop\\DataForTelegramBot\\BARCODE.xlsx", 0);
         initKeyboard();
     }
 
@@ -358,7 +360,7 @@ public class Bot extends TelegramLongPollingBot {
         LibVosk.setLogLevel(LogLevel.DEBUG);
         String result = "";
 
-        try (Model model = new Model("vosk-model-small-ru-0.22");
+        try (Model model = new Model(PathVoskModel);
              InputStream ais = AudioSystem.getAudioInputStream(new BufferedInputStream(new FileInputStream(filePath)));
              //Для корректной работы нужно подбирать sampleRate
              Recognizer recognizer = new Recognizer(model, 40000)) {
@@ -401,9 +403,8 @@ public class Bot extends TelegramLongPollingBot {
             tempWavFile.delete();
 
             // Команда FFmpeg для конвертации OGA в WAV
-            String ffmpegPath = "ffmpeg-6.0-full_build\\bin\\ffmpeg.exe";
             String[] ffmpegCommand = {
-                    ffmpegPath,
+                    PathFfmpeg,
                     "-i",
                     ogaFilePath,
                     "-af",

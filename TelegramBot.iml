@@ -179,5 +179,6 @@
     <orderEntry type="library" name="Maven: org.bytedeco:javacpp:1.5" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-exec:1.3" level="project" />
     <orderEntry type="library" name="Maven: com.elega9t:number-to-words:1.0.0" level="project" />
+    <orderEntry type="library" name="commons-codec-1.152" level="project" />
   </component>
 </module>
