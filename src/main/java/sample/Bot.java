@@ -66,8 +66,8 @@ public class Bot extends TelegramLongPollingBot {
     //вместо звездочек подставляйте свои данные
     final private String BOT_TOKEN = "5401035487:AAEQlxp44vLeiMu9lHUI6dDw51xqBg8u9gE";
     final private String BOT_NAME = "TestIDEytevv_bot";
-    final private String PathVoskModel = "C:\\Users\\Cashless\\IdeaProjects\\TelegramBot\\vosk-model-small-ru-0.22";
-    final private String PathFfmpeg = "C:\\Users\\Cashless\\IdeaProjects\\TelegramBot\\ffmpeg-5.1.2-full_build\\bin\\ffmpeg.exe";
+    final private String PathVoskModel = "D:\\Programs\\IDEA Project\\TelegramBot\\vosk-model-small-ru-0.22";
+    final private String PathFfmpeg = "D:\\Programs\\IDEA Project\\TelegramBot\\ffmpeg-5.1.2-full_build\\bin\\ffmpeg.exe";
     ReplyKeyboardMarkup replyKeyboardMarkup;
     private String shop = "all";
 
@@ -76,8 +76,8 @@ public class Bot extends TelegramLongPollingBot {
 
     Bot()
     {
-        excel.createExcel("C:\\Users\\Cashless\\Desktop\\DataForTelegramBot\\Номенклатура_30.05.23.xlsx", 0);
-        BARCODE.createExcel("C:\\Users\\Cashless\\Desktop\\DataForTelegramBot\\BARCODE.xlsx", 0);
+        excel.createExcel("D:\\Programs\\IDEA Project\\TelegramBot\\DataExcel\\Номенклатура_30.05.23.xlsx", 0);
+        BARCODE.createExcel("D:\\Programs\\IDEA Project\\TelegramBot\\DataExcel\\BARCODE.xlsx", 0);
         initKeyboard();
     }
 
